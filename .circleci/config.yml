@@ -40,7 +40,7 @@ jobs:
         prefix: ${HOME}/outputs
       - run:
         name: group
-        command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data:/bids_dataset -v ${HOME}/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group :
+        command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data:/bids_dataset -v ${HOME}/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
   deploy:
     hub:
       owner: BIDS-Apps
