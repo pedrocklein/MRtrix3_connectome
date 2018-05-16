@@ -20,9 +20,11 @@ jobs:
       - run: mkdir -p ${HOME}/outputs
 
 dependencies:
-  cache_directories:
-    - "~/docker"
-    - "~/data"
+  - save_cache:
+    key: dependency-cache
+    paths:
+      - "~/docker"
+      - "~/data"
 
 workflows:
   version: 2
@@ -40,7 +42,7 @@ workflows:
       - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data:/bids_dataset -v ${HOME}/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group :
         timeout: 21600
 
-deployment:
+deploy:
   hub:
     owner: BIDS-Apps
     tag: /.*/
