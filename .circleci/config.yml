@@ -7,17 +7,30 @@ general:
 jobs:
   build:
     docker:
-      - image: circleci:docker
+      - image: circleci:builder-base
     steps:
       - checkout
-      - run: if [[ -d ~/data/mrtrix3_connectome_data ]]; then rm -rf ${HOME}/data/mrtrix3_connectome_data; fi
-      - run: if [[ ! -d ~/data ]]; then wget -c -P ${HOME}/downloads/ "https://www.dropbox.com/s/u3uvf857jf4iqq1/MRtrix3_connectome_data_ver2.tar" && mkdir -p ${HOME}/data && tar xf ${HOME}/downloads/MRtrix3_connectome_data_ver2.tar -C ${HOME}/data; fi
-      - run: if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
-      - run: git describe --always --tags > version
-      - run: docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} . :
-          timeout: 21600
-      - run: mkdir -p ~/docker; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
-      - run: mkdir -p ${HOME}/outputs
+      - run:
+        name: Delete test data if already present
+        command: if [[ -d ~/data/mrtrix3_connectome_data ]]; then rm -rf ${HOME}/data/mrtrix3_connectome_data; fi
+      - run:
+        name: Download test data if necessary
+        command: if [[ ! -d ~/data ]]; then wget -c -P ${HOME}/downloads/ "https://www.dropbox.com/s/u3uvf857jf4iqq1/MRtrix3_connectome_data_ver2.tar" && mkdir -p ${HOME}/data && tar xf ${HOME}/downloads/MRtrix3_connectome_data_ver2.tar -C ${HOME}/data; fi
+      - run:
+        name: Load cached Docker image if present
+        command: if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
+      - run:
+        name: Save git version of repository to file /version
+        command: git describe --always --tags > version
+      - run:
+        name: Build Docker container
+        command: docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} .
+      - run:
+        name: Save Docker image to cache
+        command: mkdir -p ~/docker; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
+      - run:
+        name: Create output directory
+        command: mkdir -p ${HOME}/outputs
 
 dependencies:
   - save_cache:
