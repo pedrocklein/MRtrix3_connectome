@@ -19,20 +19,23 @@ RUN apt-get update && apt-get install -y \
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get install -y tzdata
 
-# NeuroDebian setup
-RUN wget -qO- http://neuro.debian.net/lists/artful.au.full | \
-    tee /etc/apt/sources.list.d/neurodebian.sources.list
-# Silences unnecessary warning regarding stdout not being a terminal
-ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
-RUN apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9
-RUN apt-get update
-
 # Additional dependencies for MRtrix3 compilation
 RUN apt-get install -y \
     libeigen3-dev \
     libfftw3-dev \
     libtiff5-dev \
     zlib1g-dev
+
+# NeuroDebian setup
+RUN wget -qO- http://neuro.debian.net/lists/artful.au.full | \
+    tee /etc/apt/sources.list.d/neurodebian.sources.list
+# Silences unnecessary warning regarding stdout not being a terminal
+ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
+# RUN apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
+# Due to unreliability of keyserver pool, use a local copy of the public key
+COPY neurodebian.gpg /.neurodebian.gpg
+RUN apt-key add /.neurodebian.gpg
+RUN apt-get update
 
 # Attempt to install CUDA 8.0 for eddy_cuda
 #RUN wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb && \
@@ -57,9 +60,11 @@ RUN wget -qO- https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/frees
     --exclude='freesurfer/lib/cuda' \
     --exclude='freesurfer/lib/qt'
 RUN apt-get install -y ants
+# fsl-5.0-core not available in Ubuntu 18.04 NeuroDebian listing; fsl-complete is present but not installable
 RUN apt-get install -y fsl-5.0-core
 RUN apt-get install -y fsl-first-data
 RUN apt-get install -y fsl-mni152-templates
+#RUN apt-get install -y fsl-complete
 # FSL installer appears to not yet be ready for use; encountered a lot of dict key errors
 #RUN wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py && \
 #    chmod 775 fslinstaller.py

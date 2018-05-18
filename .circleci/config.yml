@@ -50,10 +50,17 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-        - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-        - docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
-        - docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
-        - docker push bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
+          name: Perform Docker login
+          command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - run:
+          name: Push "latest" version
+          command: docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
+      - run:
+          name: Create tag for new version
+          command: docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
+      - run:
+          name: Push version based on tag
+          command: docker push bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
 
 dependencies:
   - save_cache:
