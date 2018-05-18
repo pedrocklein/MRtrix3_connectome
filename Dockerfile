@@ -136,7 +136,7 @@ RUN git clone https://github.com/MRtrix3/mrtrix3.git mrtrix3 && \
     cd mrtrix3 && \
     git checkout 3.0_RC3 && \
     python configure -nogui && \
-    python build -persistent -nopaginate && \
+    python build -persistent -nopaginate -verbose && \
     git describe --tags > /mrtrix3_version
 #RUN echo $'FailOnWarn: 1\n' > /etc/mrtrix.conf
 

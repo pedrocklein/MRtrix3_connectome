@@ -903,6 +903,9 @@ def runGroup(output_dir):
 
 
 # TODO Add Lausanne FreeSurfer atlas parcellations
+#   - Seem to be in graphml format; not sure how to use...?
+# TODO Add Mindboggle atlas & parcellation (use FreeSurfer files rather than MNI volumes)
+# TODO Add Schaefer2018 parcellations
 
 analysis_choices = [ 'participant', 'group' ]
 parcellation_choices = [ 'aal', 'aal2', 'craddock200', 'craddock400', 'desikan', 'destrieux', 'hcpmmp1', 'perry512' ]
