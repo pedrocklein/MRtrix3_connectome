@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci:builder-base
+      - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
     steps:
       - checkout
       - run:
@@ -26,7 +26,7 @@ jobs:
           command: mkdir -p ${HOME}/outputs
   test:
     docker:
-      - image: circleci:builder-base
+      - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
     steps:
       - checkout
       - run:
