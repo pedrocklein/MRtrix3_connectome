@@ -89,6 +89,9 @@ RUN wget -q https://github.com/AlistairPerry/CCA/raw/master/parcellations/512inM
 #    rm -f oasis.zip
 RUN wget -qO- http://www.nitrc.org/frs/download.php/5906/ADHD200_parcellations.tar.gz | \
     tar zx -C /opt
+RUN mkdir /opt/brainnetome
+# Go for the FSL_data/ thr0 data, or easier-to-obtain thr25 1.25mm data?
+#  ... 1.25mm with own 1.25mm template, or 1mm with MNI template?
 RUN wget -q "https://s3-eu-west-1.amazonaws.com/pfigshare-u-files/5528816/lh.HCPMMP1.annot" -O /opt/freesurfer/subjects/fsaverage/label/lh.HCPMMP1.annot
 RUN wget -q "https://s3-eu-west-1.amazonaws.com/pfigshare-u-files/5528819/rh.HCPMMP1.annot" -O /opt/freesurfer/subjects/fsaverage/label/rh.HCPMMP1.annot
 

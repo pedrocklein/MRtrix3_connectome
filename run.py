@@ -321,6 +321,7 @@ def runSubject(bids_dir, label, output_prefix):
       dwipreproc_se_epi_option = ''
 
     # Step 3: Distortion correction
+    # TODO Use dirstat to check diffusion table distributions; use -eddy_options "--slm=linear" if required
     app.console('Performing various geometric corrections of DWIs')
     dwipreproc_input_header = image.Header(dwipreproc_input)
     have_slice_timing = 'SliceTiming' in dwipreproc_input_header.keyval()
@@ -350,6 +351,7 @@ def runSubject(bids_dir, label, output_prefix):
       eddy_binary = fsl.eddyBinary(False)
       eddy_cuda = False
     app.var(eddy_binary, eddy_cuda)
+    # TODO Use some other mechanism to obtain help files of external commands
     (eddy_stdout, eddy_stderr) = run.command(eddy_binary + ' --help', False)
     app.var(eddy_stdout, eddy_stderr)
     eddy_options = []
