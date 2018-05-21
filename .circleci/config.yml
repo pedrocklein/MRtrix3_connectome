@@ -21,9 +21,9 @@ jobs:
           name: Save Docker image to file
           command: if [[ ! -d ~/docker ]]; then mkdir ~/docker; fi; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
       - persist_to_workspace:
-          root: docker
+          root: .
           paths:
-            - image.tar
+            - docker
 
   test:
     docker:
