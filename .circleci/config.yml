@@ -19,8 +19,10 @@ jobs:
       - run:
           name: Save Docker image to cache
           command: mkdir -p ~/docker; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ${HOME}/docker/image.tar
-      - store_artifacts:
-          path: ${HOME}/docker/
+      - persist_to_workspace:
+          root: docker
+          paths:
+            - image.tar
 
   test:
     docker:
@@ -28,9 +30,11 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - attach_workspace:
+          at: /tmp/
       - run:
           name: Load cached Docker image (MUST be present)
-          command: docker load -i ~/docker/image.tar
+          command: docker load -i /tmp/image.tar
       - run:
           name: Print version
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp bids/${CIRCLE_PROJECT_REPONAME,,} --version
@@ -46,17 +50,17 @@ jobs:
       - run:
           name: Run group-level analysis
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data:/bids_dataset -v ${HOME}/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
-      - store_artifacts:
-          path: ${HOME}/outputs
   deploy:
     docker:
       - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
     steps:
       - checkout
       - setup_remote_docker
+      - attach_workspace:
+          at: /tmp/
       - run:
           name: Load cached Docker image (MUST be present)
-          command: docker load -i ~/docker/image.tar
+          command: docker load -i /tmp/image.tar
       - run:
           name: Perform Docker login
           command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
