@@ -8,9 +8,6 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Download test data if necessary
-          command: if [[ ! -d ~/data ]]; then wget -c -P ${HOME}/downloads/ "https://www.dropbox.com/s/u3uvf857jf4iqq1/MRtrix3_connectome_data_ver2.tar" && mkdir -p ${HOME}/data && tar xf ${HOME}/downloads/MRtrix3_connectome_data_ver2.tar -C ${HOME}/data; fi
-      - run:
           name: Load cached Docker image if present
           command: if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
       - run:
@@ -21,10 +18,10 @@ jobs:
           command: docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} .
       - run:
           name: Save Docker image to cache
-          command: mkdir -p ~/docker; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
-      - run:
-          name: Create output directory
-          command: mkdir -p ${HOME}/outputs
+          command: mkdir -p ~/docker; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ${HOME}/docker/image.tar
+      - store_artifacts:
+          path: ${HOME}/docker/
+
   test:
     docker:
       - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
@@ -32,23 +29,34 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: print_version
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data:/bids_dataset bids/${CIRCLE_PROJECT_REPONAME,,} --version
+          name: Load cached Docker image (MUST be present)
+          command: docker load -i ~/docker/image.tar
       - run:
-          name: participant
+          name: Print version
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp bids/${CIRCLE_PROJECT_REPONAME,,} --version
+      - run:
+          name: Download test data if necessary
+          command: if [[ ! -d ${HOME}/data ]]; then wget -c -P ${HOME}/downloads/ "https://www.dropbox.com/s/u3uvf857jf4iqq1/MRtrix3_connectome_data_ver2.tar" && mkdir -p ${HOME}/data && tar xf ${HOME}/downloads/MRtrix3_connectome_data_ver2.tar -C ${HOME}/data; fi
+      - run:
+          name: Create output directory
+          command: mkdir -p ${HOME}/outputs
+      - run:
+          name: Run participant-level analysis
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data:/bids_dataset -v ${HOME}/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --parcellation aal --streamlines 100000 --preprocessed
-      - store_artifacts:
-          path: outputs
-          prefix: ${HOME}/outputs
       - run:
-          name: group
+          name: Run group-level analysis
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data:/bids_dataset -v ${HOME}/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+      - store_artifacts:
+          path: ${HOME}/outputs
   deploy:
     docker:
       - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
     steps:
       - checkout
       - setup_remote_docker
+      - run:
+          name: Load cached Docker image (MUST be present)
+          command: docker load -i ~/docker/image.tar
       - run:
           name: Perform Docker login
           command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
