@@ -2,11 +2,9 @@ version: 2
 
 jobs:
   all:
-    docker:
-      - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
+    machine: true
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: Load cached Docker image if present
           command: if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
