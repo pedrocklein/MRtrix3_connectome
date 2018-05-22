@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  build:
+  all:
     docker:
       - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
     steps:
@@ -18,25 +18,6 @@ jobs:
           command: docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} .
           no_output_timeout: 60m
       - run:
-          name: Save Docker image to file
-          command: if [[ ! -d ~/docker ]]; then mkdir ~/docker; fi; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
-      - persist_to_workspace:
-          root: docker
-          paths:
-            - image.tar
-
-  test:
-    docker:
-      - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
-    steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/docker
-      - run:
-          name: Load cached Docker image (MUST be present)
-          command: docker load -i ~/docker/image.tar
-      - run:
           name: Print version
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp bids/${CIRCLE_PROJECT_REPONAME,,} --version
       - run:
@@ -51,29 +32,15 @@ jobs:
       - run:
           name: Run group-level analysis
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ~/data:/bids_dataset -v ~/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
-  deploy:
-    docker:
-      - image: circleci/build-image:ubuntu-14.04-XXL-1327-3401d20
-    steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/docker
       - run:
-          name: Load cached Docker image (MUST be present)
-          command: docker load -i ~/docker/image.tar
+          name: Push "latest" version to DockerHub
+          command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
       - run:
-          name: Perform Docker login
-          command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+          name: Create tag for new version, and push to DockerHub based on tag
+          command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS && docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
       - run:
-          name: Push "latest" version
-          command: docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
-      - run:
-          name: Create tag for new version
-          command: docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
-      - run:
-          name: Push version based on tag
-          command: docker push bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
+          name: Save Docker image to file
+          command: if [[ ! -d ~/docker ]]; then mkdir ~/docker; fi; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
 
 dependencies:
   - save_cache:
@@ -84,16 +51,6 @@ dependencies:
 
 workflows:
   version: 2
-  build_test_deploy:
+  do_everything:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - deploy:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-
+      - all
