@@ -26,10 +26,10 @@ jobs:
           command: mkdir -p ~/outputs
       - run:
           name: Run participant-level analysis
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ~/data:/bids_dataset -v ~/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --parcellation aal --streamlines 100000 --preprocessed
+          command: docker run -ti --rm -v /tmp:/tmp -v /var/tmp:/var/tmp -v ~/data:/bids_dataset -v ~/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --parcellation aal --streamlines 100000 --preprocessed
       - run:
           name: Run group-level analysis
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ~/data:/bids_dataset -v ~/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+          command: docker run -ti --rm -v /tmp:/tmp -v /var/tmp:/var/tmp -v ~/data:/bids_dataset -v ~/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
       - run:
           name: Push "latest" version to DockerHub
           command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
