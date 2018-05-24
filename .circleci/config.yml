@@ -33,10 +33,10 @@ jobs:
           command: docker run -ti --rm -v /tmp:/tmp -v /var/tmp:/var/tmp -v ~/data:/bids_dataset -v ~/outputs:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
       - run:
           name: Push "latest" version to DockerHub
-          command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
       - run:
           name: Create tag for new version, and push to DockerHub based on tag
-          command: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS && docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS && docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG
       - run:
           name: Save Docker image to file
           command: if [[ ! -d ~/docker ]]; then mkdir ~/docker; fi; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
