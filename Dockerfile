@@ -148,4 +148,4 @@ RUN chmod 775 /mrtrix3_connectome.py
 
 COPY version /version
 
-ENTRYPOINT ["/mrtrix3_connectome.py"]
+#ENTRYPOINT ["/mrtrix3_connectome.py"]

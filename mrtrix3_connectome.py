@@ -389,7 +389,8 @@ def runSubject(bids_dir, label, output_prefix):
         eddy_options.append('--mporder=' + str(mporder))
     dwipreproc_eddy_option = ' -eddy_options \" ' + ' '.join(eddy_options) + '\"' if eddy_options else ''
     run.function(os.makedirs, 'eddyqc')
-    run.command('dwipreproc ' + dwipreproc_input + ' dwi_preprocessed.mif -rpe_header' + dwipreproc_se_epi_option + dwipreproc_eddy_option + ' -eddyqc_text eddyqc/')
+    #run.command('dwipreproc ' + dwipreproc_input + ' dwi_preprocessed.mif -rpe_header' + dwipreproc_se_epi_option + dwipreproc_eddy_option + ' -eddyqc_text eddyqc/')
+    run.command('dwipreproc ' + dwipreproc_input + ' dwi_preprocessed.mif -rpe_none -pe_dir AP' + dwipreproc_se_epi_option + dwipreproc_eddy_option + ' -eddyqc_text eddyqc/')
     file.delTemporary(dwipreproc_input)
     if dwipreproc_se_epi:
       file.delTemporary(dwipreproc_se_epi)
